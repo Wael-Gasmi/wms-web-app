@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  firstName      String?
+  lastName       String?
+  email          String    @unique
+  password       String?
+  isActive       Boolean   @default(false)
+  lastLogin      DateTime?
+  phoneNumber    String?   @unique
+  gender         String?
+  address        String?
+  profilePicture String?
+  dateOfBirth    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  roleId         String?
+  menuId         String?
+
+  role Role? @relation(fields: [roleId], references: [id])
+  menu Menu? @relation(fields: [menuId], references: [id])
+
+  @@index([email])
+  @@index([roleId])
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  User        User[]
+
+  @@index([name])
+}
+
+model Menu {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  sessions    Session[] @relation("MenuSessions")
+  User        User[]
+
+  @@index([name])
+}
+
+model Session {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  icon            String?
+  path            String?  @unique
+  parentSessionId String?
+  description     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  menus         Menu[]    @relation("MenuSessions")
+  parentSession Session?  @relation("SubSessions", fields: [parentSessionId], references: [id])
+  subSessions   Session[] @relation("SubSessions")
+
+  @@index([path])
+  @@index([parentSessionId])
+}
