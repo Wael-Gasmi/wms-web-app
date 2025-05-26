@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { useCreateUser, useEditUser } from "@/hooks/useCreateUser";
+import { useCreateUser, useEditUser } from "@/hooks/useUser";
 
 type FormFields = {
   id?: string;

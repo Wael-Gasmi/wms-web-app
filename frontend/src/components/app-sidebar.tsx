@@ -8,6 +8,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 import { NavLink } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
@@ -22,7 +23,6 @@ import RenderIcon from "./renderIcon";
 export function AppSidebar() {
   const { data } = useAuthStore();
   const menu = data?.menu?.sessions;
-
   return (
     <Sidebar collapsible="icon" side="left">
       <SidebarContent>
@@ -37,7 +37,10 @@ export function AppSidebar() {
                       <SidebarMenuItem className={"cursor-pointer"}>
                         <CollapsibleTrigger asChild>
                           <p>
-                            <SidebarMenuButton className="cursor-pointer">
+                            <SidebarMenuButton
+                              className="cursor-pointer"
+                              tooltip={item.name}
+                            >
                               <RenderIcon icon={item.icon} />
                               <span>{item.name}</span>
                             </SidebarMenuButton>
@@ -53,7 +56,10 @@ export function AppSidebar() {
                                 }
                                 key={subItem.name}
                               >
-                                <SidebarMenuButton className="cursor-pointer">
+                                <SidebarMenuButton
+                                  className="cursor-pointer"
+                                  tooltip={item.name}
+                                >
                                   <span>{subItem.name}</span>
                                 </SidebarMenuButton>
                               </NavLink>
@@ -64,7 +70,7 @@ export function AppSidebar() {
                     </Collapsible>
                   ) : (
                     <SidebarMenuItem key={item.name}>
-                      <SidebarMenuButton asChild>
+                      <SidebarMenuButton asChild tooltip={item.name}>
                         <NavLink to={item.path}>
                           <RenderIcon icon={item.icon} />
                           <span>{item.name}</span>
@@ -78,6 +84,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <AppSidebarFooter />
+      <SidebarRail />
     </Sidebar>
   );
 }

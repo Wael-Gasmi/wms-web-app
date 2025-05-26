@@ -1,6 +1,7 @@
 import { odooLogin } from "../db/connectToOdoo.js";
 import dotenv from "dotenv";
 import axios from "axios";
+import fs from "fs";
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ if (!uid) throw new Error("Failed to authenticate with Odoo");
 
 export const getReceipts = async (req, res) => {
   try {
-    const receipts = await axios.post(`${process.env.ODOO_URL}/jsonrpc`, {
+    const response = await axios.post(`${process.env.ODOO_URL}/jsonrpc`, {
       jsonrpc: "2.0",
       method: "call",
       params: {
@@ -25,16 +26,24 @@ export const getReceipts = async (req, res) => {
           process.env.ODOO_PASSWORD,
           "stock.picking",
           "search_read",
-          [[]],
+          [[["picking_type_code", "=", "incoming"]]],
           {
-            fields: ["name", "state", "partner_id"],
+            fields: ["id", "name", "state", "partner_id", "scheduled_date"],
           },
         ],
       },
       id: 1,
     });
 
-    return res.json(receipts.data.result);
+    const receipts = response.data.result.map((receipt) => {
+      const [partnerId, partnerName] = receipt.partner_id || [];
+      return {
+        ...receipt,
+        partner_id: partnerId ? { id: partnerId, name: partnerName } : null,
+      };
+    });
+
+    return res.json(receipts);
   } catch (err) {
     console.error("Error:", err.message);
     return res.status(500).json({ error: "Something went wrong" });
@@ -42,65 +51,89 @@ export const getReceipts = async (req, res) => {
 };
 
 export const getReceiptById = async (req, res) => {
-  const receiptName = "WH/IN/00001";
-
   try {
-    const { data: receiptRes } = await axios.post(`${ODOO_URL}/jsonrpc`, {
+    const { id } = req.params;
+    const receiptId = parseInt(id, 10);
+
+    if (isNaN(receiptId)) {
+      return res.status(400).json({ error: "Invalid receipt ID" });
+    }
+
+    const uid = await odooLogin();
+    if (!uid) {
+      return res.status(500).json({ error: "Failed to login to Odoo" });
+    }
+
+    const { data } = await axios.post(`${process.env.ODOO_URL}/jsonrpc`, {
       jsonrpc: "2.0",
       method: "call",
       params: {
         service: "object",
         method: "execute_kw",
         args: [
-          DB,
+          process.env.ODOO_DATABASE,
           uid,
-          PASSWORD,
-          "stock.picking",
+          process.env.ODOO_PASSWORD,
+          "stock.move",
           "search_read",
-          [[["name", "=", receiptName]]],
-          { fields: ["move_lines", "move_ids_without_package"] },
+          [[["picking_id", "=", receiptId]]],
+          {
+            fields: ["product_id", "product_uom_qty"],
+          },
         ],
       },
       id: 1,
     });
 
-    const receipt = receiptRes.result[0];
-    console.log("Receipt:", JSON.stringify(receipt, null, 2));
+    const result = data?.result;
 
-    if (!receipt) {
+    if (!result || result.length === 0) {
       return res.status(404).json({ error: "Receipt not found" });
     }
 
-    const moveLineIds = receipt.move_ids_without_package.length
-      ? receipt.move_ids_without_package
-      : receipt.move_lines;
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("Error fetching receipt:", error);
 
-    if (!moveLineIds || moveLineIds.length === 0) {
-      return res.json([]);
-    }
+    const status = error?.response?.status || 500;
+    const message =
+      error?.response?.data?.error || error?.message || "Internal server error";
 
-    const { data: moveRes } = await axios.post(`${ODOO_URL}/jsonrpc`, {
-      jsonrpc: "2.0",
-      method: "call",
-      params: {
-        service: "object",
-        method: "execute_kw",
-        args: [
-          DB,
-          uid,
-          PASSWORD,
-          "stock.move",
-          "read",
-          moveLineIds,
-          ["product_id", "product_uom_qty", "quantity_done"],
-        ],
-      },
-      id: 2,
-    });
+    return res.status(status).json({ error: message });
+  }
+};
 
-    res.json(moveRes.result);
+export const downloadReceiptPdf = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const pdfResponse = await axios.post(
+      `${process.env.ODOO_URL}/report/pdf/stock.report_picking/${id}`,
+      {},
+      {
+        auth: {
+          username: process.env.ODOO_USERNAME,
+          password: process.env.ODOO_PASSWORD,
+        },
+        responseType: "arraybuffer",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/pdf",
+        },
+      }
+    );
+
+    fs.writeFileSync(`./receipt_${id}.pdf`, Buffer.from(pdfResponse.data));
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=receipt_${id}.pdf`
+    );
+    res.setHeader("Content-Transfer-Encoding", "binary");
+    res.end(Buffer.from(pdfResponse.data), "binary");
   } catch (err) {
-    console.error(err.response?.data || err.message);
-    res.status(500).json({ error: "Error fetching receipt products" });
+    console.error("PDF Download Error:", err.message);
+    res.status(500).json({ error: "Failed to download PDF" });
   }
 };

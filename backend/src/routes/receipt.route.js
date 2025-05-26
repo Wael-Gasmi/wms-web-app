@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  downloadReceiptPdf,
   getReceiptById,
   getReceipts,
 } from "../controllers/receipt.controller.js";
@@ -7,6 +8,7 @@ import {
 const router = express.Router();
 
 router.get("/", getReceipts);
-router.get("/getReceiptProducts", getReceiptById);
+router.get("/:id", getReceiptById);
+router.get("/:id/pdf", downloadReceiptPdf);
 
 export default router;

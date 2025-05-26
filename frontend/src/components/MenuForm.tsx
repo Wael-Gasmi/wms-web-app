@@ -3,11 +3,10 @@ import { Textarea } from "./ui/textarea";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { useCreateMenu, useEditMenu } from "@/hooks/useCreateMenu";
+import { useCreateMenu, useEditMenu } from "@/hooks/useMenu";
 import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
 import { useSessions } from "@/hooks/useData";
-import { Checkbox } from "./ui/checkbox";
 import { useEffect, useState } from "react";
 
 type FormFields = {
@@ -41,29 +40,35 @@ export default function MenuForm({ form }: MenuFormProps) {
   });
 
   useEffect(() => {
-    console.log(selectedSessions);
-  }, [selectedSessions]);
+    if (form?.sessions && sessions) {
+      const matched = sessions.filter((s: Session) =>
+        form.sessions?.some((fs) => fs.id === s.id)
+      );
+      setSelectedSessions(matched);
+    }
+  }, [form, sessions]);
 
   const toggleSession = (session: Session, isChecked: boolean) => {
-    setSelectedSessions((prev) => {
-      const updated = isChecked
-        ? [...prev, session]
-        : prev.filter((s) => s.id !== session.id);
-      console.log(updated); // Debugging selectedSessions
-      return updated;
-    });
+    setSelectedSessions((prev) =>
+      isChecked ? [...prev, session] : prev.filter((s) => s.id !== session.id)
+    );
   };
 
   const onSubmit: SubmitHandler<FormFields> = (data) => {
+    const payload = {
+      ...data,
+      des: data.description,
+      sessions: selectedSessions,
+    };
+
     if (form) {
-      editMenu({ ...data, sessions: selectedSessions });
+      editMenu(payload);
     } else {
-      createMenu({ ...data, sessions: selectedSessions });
+      createMenu(payload);
     }
   };
 
   const isChecked = (session: Session) => {
-    console.log("Checking session:", session.name); // Debugging session check
     return selectedSessions.some((s) => s.id === session.id);
   };
 
@@ -97,11 +102,10 @@ export default function MenuForm({ form }: MenuFormProps) {
             {sessions?.map((s: Session) => (
               <div key={s.id}>
                 <div className="flex gap-4 items-center">
-                  <Checkbox
+                  <input
+                    type="checkbox"
                     checked={isChecked(s)}
-                    onCheckedChange={(checked: boolean | "indeterminate") =>
-                      toggleSession(s, checked === true)
-                    }
+                    onChange={(e) => toggleSession(s, e.target.checked)}
                   />
                   <Label className="text-sm">{s.name}</Label>
                 </div>

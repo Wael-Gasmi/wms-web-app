@@ -7,10 +7,10 @@ import "./App.css";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import SignUp from "./pages/SignUp";
-import ManageMenu from "./pages/ManageMenu";
-import ManageRole from "./pages/ManageRole";
-import ManageUser from "./pages/ManageUser";
-import ManageSession from "./pages/ManageSession";
+import ManageMenu from "./pages/Menu";
+import ManageRole from "./pages/Role";
+import ManageUser from "./pages/User";
+import ManageSession from "./pages/Session";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Layout from "./pages/Layout";
@@ -21,6 +21,8 @@ import Reports from "./pages/Reports";
 import ManageProduct from "./pages/Product";
 import Deliveries from "./pages/Deliveries";
 import Receipts from "./pages/Receipts";
+import Locations from "./pages/Locations";
+import StockMovements from "./pages/StockMovements";
 
 function App() {
   const { data } = useAuthStore();
@@ -65,6 +67,25 @@ function App() {
           element: (
             <ProtectRoute route="receipts">
               <Receipts />
+            </ProtectRoute>
+          ),
+        },
+        {
+          path: "stock-movements",
+          element: (
+            <ProtectRoute
+              route="stock-movements
+"
+            >
+              <StockMovements />
+            </ProtectRoute>
+          ),
+        },
+        {
+          path: "locations",
+          element: (
+            <ProtectRoute route="locations">
+              <Locations />
             </ProtectRoute>
           ),
         },

@@ -3,7 +3,7 @@ import { Textarea } from "./ui/textarea";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { useCreateRole, useEditRole } from "@/hooks/useCreateRole";
+import { useCreateRole, useEditRole } from "@/hooks/useRole";
 
 type FormFields = {
   id?: string;

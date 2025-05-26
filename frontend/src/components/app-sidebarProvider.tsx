@@ -11,7 +11,7 @@ export default function AppSidebarProvider() {
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <App />,
+      <App />
     </SidebarProvider>
   );
 }

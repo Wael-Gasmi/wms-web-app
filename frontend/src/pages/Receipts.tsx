@@ -7,22 +7,14 @@ import { ColumnDef, Column } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { EyeIcon } from "lucide-react";
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
-import { useReceiptById, useReceipts } from "@/hooks/useReceipt";
+import { useDownloadReceiptPdf, useReceipts } from "@/hooks/useReceipt";
 import ReceiptSheet from "@/components/receiptSheet";
-import { useState } from "react";
 import ErrorPage from "@/components/ErrorPage";
-
-const tableColumns = [
-  { label: "Name", name: "name" },
-  { label: "Contact", name: "partner_id" },
-  { label: "Status", name: "state" },
-]; 
+import { Badge } from "@/components/ui/badge";
 
 export default function Receipts() {
   const { data: receipts, isLoading, isError } = useReceipts();
-  const [selectedReceiptId, setSelectedReceiptId] = useState<string>("");
-
-  const { data: receipt } = useReceiptById(selectedReceiptId);
+  const { mutate: downloadPdf } = useDownloadReceiptPdf();
 
   if (isLoading) {
     return <LoadingPage />;
@@ -32,46 +24,127 @@ export default function Receipts() {
     return <ErrorPage />;
   }
 
-  const handleReceiptProducts = (id: string) => {
-    setSelectedReceiptId(id);
+  const getStatusBadge = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "done":
+        return <Badge variant="default">Done</Badge>;
+      case "cancel":
+        return <Badge variant="destructive">Cancel</Badge>;
+      case "assigned":
+        return <Badge variant="secondary">Assigned</Badge>;
+      case "ready":
+        return <Badge variant="outline">Ready</Badge>;
+      case "draft":
+        return <Badge variant="destructive">Draft</Badge>;
+    }
   };
 
   const columns: ColumnDef<Receipt>[] = [
-    ...tableColumns.map((column) => ({
-      accessorKey: column.name,
-      header: ({ column: col }: { column: Column<Receipt> }) => (
-        <DataTableColumnHeader column={col} title={column.label} />
+    {
+      accessorKey: "id",
+      header: ({ column }: { column: Column<Receipt> }) => (
+        <DataTableColumnHeader column={column} title="id" />
       ),
-      id: column.name,
-    })),
+      id: "id",
+      meta: {
+        hidden: true,
+      },
+    },
+    {
+      accessorKey: "name",
+      header: ({ column }: { column: Column<Receipt> }) => (
+        <DataTableColumnHeader column={column} title="Name" />
+      ),
+      id: "name",
+      meta: {
+        hidden: false,
+      },
+    },
+    {
+      accessorKey: "partner_id.name",
+      header: ({ column }: { column: Column<Receipt> }) => (
+        <DataTableColumnHeader column={column} title="Receive From" />
+      ),
+      id: "partner_id.name",
+      meta: {
+        hidden: false,
+      },
+    },
+    {
+      accessorKey: "scheduled_date",
+      header: ({ column }: { column: Column<Receipt> }) => (
+        <DataTableColumnHeader column={column} title="Scheduled Date" />
+      ),
+      id: "scheduled_date",
+      meta: {
+        hidden: false,
+      },
+    },
+    {
+      accessorKey: "state",
+      header: ({ column }: { column: Column<Receipt> }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
+      id: "state",
+      meta: {
+        hidden: false,
+      },
+      cell: ({ row }) => {
+        const item = row.original;
+        return getStatusBadge(item.state ?? "");
+      },
+    },
+    {
+      id: "print",
+      meta: {
+        hidden: false,
+      },
+      cell: ({ row }) => {
+        const item = row.original;
+        return (
+          <Button
+            variant="ghost"
+            className="cursor-pointer"
+            onClick={() => downloadPdf(item.id ?? "")}
+          >
+            Print
+          </Button>
+        );
+      },
+    },
     {
       id: "actions",
+      meta: {
+        hidden: false,
+      },
       cell: ({ row }) => {
         const item = row.original;
         return (
           <Sheet>
             <SheetTrigger asChild>
-              <Button
-                variant="link"
-                className="cursor-pointer"
-                onClick={() => handleReceiptProducts(item.name ?? "")}
-              >
+              <Button variant="ghost" className="cursor-pointer">
                 <EyeIcon />
               </Button>
             </SheetTrigger>
-            <ReceiptSheet item={item} receipt={receipt} />
+            <ReceiptSheet item={item} />
           </Sheet>
         );
       },
     },
   ];
 
+  const visibleColumns = columns.filter((col) => !col.meta?.hidden);
+
   return (
-    <div className="container mx-auto py-10 px-5  overflow-hidden">
-      <h1 className="text-2xl font-bold tracking-tighter  ">Manage Receipt</h1>
+    <div className="container mx-auto py-10 px-5 overflow-hidden">
+      <h1 className="text-2xl font-bold tracking-tighter">Receipts</h1>
       <Separator className="my-5" />
       <div className="overflow-x-auto">
-        <DataTable columns={columns} data={receipts ?? []} form="receipt" />
+        <DataTable
+          columns={visibleColumns}
+          data={receipts ?? []}
+          form="receipt"
+        />
       </div>
     </div>
   );

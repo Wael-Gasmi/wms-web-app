@@ -10,7 +10,7 @@ import {
 import { Textarea } from "./ui/textarea";
 import { Session } from "@/types/types";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useCreateSession, useEditSession } from "@/hooks/userCreateSession";
+import { useCreateSession, useEditSession } from "@/hooks/useSession";
 import { useSessions } from "@/hooks/useData";
 import { icons } from "./icons";
 

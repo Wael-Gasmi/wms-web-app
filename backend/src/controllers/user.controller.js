@@ -22,6 +22,7 @@ export const getUsers = async (req, res) => {
     const users = await prisma.user.findMany({
       include: {
         role: true,
+        menu: true,
       },
     });
     res.status(200).json(users);
@@ -36,6 +37,7 @@ export const getUserById = async (req, res) => {
       where: { id },
       include: {
         role: true,
+        menu: true,
       },
     });
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -59,16 +61,9 @@ export const updateUser = async (req, res) => {
       roleId,
     } = req.body;
 
-    if (!firstName || !lastName || !email) {
-      return res.status(400).json({ error: "Please fill in all fields" });
-    }
-
     const user = await prisma.user.findUnique({ where: { id } });
 
     if (!user) return res.status(404).json({ error: "User not found" });
-
-    const salt = await bcryptjs.genSalt(10);
-    const hashedPassword = await bcryptjs.hash(password, salt);
 
     const updatedUser = await prisma.user.update({
       where: { id },
@@ -80,7 +75,7 @@ export const updateUser = async (req, res) => {
         ...(gender != undefined && { gender }),
         ...(address != undefined && { address }),
         ...(profilePicture != undefined && { profilePicture }),
-        ...(dateOfBirth != undefined && { dateOfBirth }),
+        ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }),
         ...(roleId != undefined && { roleId }),
       },
     });

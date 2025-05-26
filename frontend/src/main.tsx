@@ -12,7 +12,6 @@ createRoot(document.getElementById("root")!).render(
       <QueryClientProvider client={queryClient}>
         <AppSidebarProvider />
       </QueryClientProvider>
-      ,
     </ThemeProvider>
   </StrictMode>
 );

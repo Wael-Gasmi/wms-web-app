@@ -18,7 +18,6 @@ const tableColumns = [
   { label: "Cost", name: "standard_price" },
   { label: "Quantity", name: "qty_available" },
   { label: "Forecasted", name: "virtual_available" },
-  { label: "Category", name: "categ_id" },
 ];
 
 export default function ManageProduct() {
@@ -60,7 +59,7 @@ export default function ManageProduct() {
 
   return (
     <div className="container mx-auto py-10 px-5  overflow-hidden">
-      <h1 className="text-2xl font-bold tracking-tighter  ">Manage Products</h1>
+      <h1 className="text-2xl font-bold tracking-tighter  ">Products</h1>
       <Separator className="my-5" />
       <div className="overflow-x-auto">
         <DataTable columns={columns} data={products ?? []} form="product" />

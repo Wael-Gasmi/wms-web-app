@@ -71,19 +71,7 @@ export default function ProductSheet({ item }: ProductSheetProps) {
             className="col-span-3"
             disabled
           />
-        </div>{" "}
-        <Separator />
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="" className="text-left col-span-1">
-            Category
-          </Label>
-          <Input
-            id="categ_id"
-            value={!item.categ_id ? "None" : item.categ_id ?? ""}
-            className="col-span-3"
-            disabled
-          />
-        </div>{" "}
+        </div>
         <Separator />
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="" className="text-left col-span-1">

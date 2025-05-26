@@ -27,7 +27,11 @@ export const addMenu = async (req, res) => {
 };
 export const getMenus = async (req, res) => {
   try {
-    const menus = await prisma.menu.findMany();
+    const menus = await prisma.menu.findMany({
+      include: {
+        sessions: true,
+      },
+    });
     return res.status(200).json(menus);
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
@@ -50,13 +54,19 @@ export const getMenuById = async (req, res) => {
 export const updateMenu = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, des } = req.body;
+    const { name, description, sessions } = req.body;
 
     const updatedMenu = await prisma.menu.update({
       where: { id },
       data: {
         name,
-        description: des,
+        ...(description !== undefined && { description }),
+        ...(sessions !== undefined && {
+          sessions: {
+            set: [],
+            connect: sessions.map((session) => ({ id: session.id })),
+          },
+        }),
       },
     });
 

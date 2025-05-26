@@ -5,6 +5,8 @@ import {
   Home,
   Inbox,
   Layers,
+  MapPin,
+  MoveHorizontal,
   Package,
   Search,
   Settings,
@@ -38,6 +40,10 @@ export default function RenderIcon({ icon }: RenderIconProps) {
         return <Package />;
       case "truck":
         return <Truck />;
+      case "mappin":
+        return <MapPin />;
+      case "movehorizontal":
+        return <MoveHorizontal />;
       default:
         return null;
     }

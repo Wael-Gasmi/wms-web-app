@@ -6,75 +6,54 @@ import {
   SheetHeader,
   SheetTitle,
 } from "./ui/sheet";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
-import { Product, Receipt } from "@/types/types";
+import { Receipt } from "@/types/types";
 import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
-import { Textarea } from "./ui/textarea";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useReceiptById } from "@/hooks/useReceipt";
 
 type ReceiptSheetProps = {
   item: Receipt;
-  receipt: Product[];
 };
 
-export default function ReceiptSheet({ item, receipt }: ReceiptSheetProps) {
-  console.log("receipt", receipt);
+type ReceiptProduct = {
+  id: string;
+  product_id: [number, string];
+  product_uom_qty: number;
+};
+
+export default function ReceiptSheet({ item }: ReceiptSheetProps) {
+  const { data: receipt } = useReceiptById(item.id ?? "");
+
   return (
     <SheetContent>
       <SheetHeader>
         <SheetTitle className="text-xl  py-5">Receipt Products</SheetTitle>
-        <SheetDescription></SheetDescription>
+        <SheetDescription>Receipt {item.name}</SheetDescription>
       </SheetHeader>
-      <div className="grid gap-4  px-10">
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="name" className="text-left col-span-1">
-            Receipt Name{" "}
-          </Label>
-          <Textarea
-            id="name"
-            value={item.name ?? ""}
-            className="col-span-3 resize-none"
-            disabled
-          />
-        </div>
-        <Separator />
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="name" className="text-left col-span-1">
-            Quantity On Hand
-          </Label>
-          <Input
-            id="partner_id"
-            value={item.partner_id ?? ""}
-            className="col-span-3"
-            disabled
-          />
-        </div>
-        <Separator />
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="" className="text-left col-span-1">
-            Sales Price
-          </Label>
-          <Input
-            id="sheduled_date"
-            value={item.sheduled_date ?? ""}
-            className="col-span-3"
-            disabled
-          />
-        </div>{" "}
-        <Separator />
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="" className="text-left col-span-1">
-            Cost
-          </Label>
-          <Input
-            id="state"
-            value={item.state ?? ""}
-            className="col-span-3"
-            disabled
-          />
-        </div>{" "}
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[100px]">Product</TableHead>
+            <TableHead>Quantity</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {receipt &&
+            receipt.map((product: ReceiptProduct) => (
+              <TableRow key={product.id}>
+                <TableCell>{product.product_id[1]}</TableCell>
+                <TableCell>{product.product_uom_qty}</TableCell>
+              </TableRow>
+            ))}
+        </TableBody>
+      </Table>
       <SheetFooter>
         <SheetClose asChild>
           <Button className="cursor-pointer">Close</Button>

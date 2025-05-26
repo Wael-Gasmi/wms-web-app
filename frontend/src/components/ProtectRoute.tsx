@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { Session } from "@/types/types";
+import NotAuthorized from "@/pages/NotAuthorized";
 
 type ProtectRouteProps = {
   route: string;
@@ -18,7 +19,7 @@ export default function ProtectRoute({ route, children }: ProtectRouteProps) {
     );
 
   if (!isAuthorized) {
-    return <div>Not Authorized</div>;
+    return <NotAuthorized />;
   }
 
   return <>{children}</>;

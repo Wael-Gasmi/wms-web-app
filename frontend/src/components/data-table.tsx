@@ -13,6 +13,7 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -45,6 +46,7 @@ import UserForm from "./UserForm";
 import { DataTableViewOptions } from "./dataTableViewOptions";
 import { DataTablePagination } from "./dataTablePagination";
 import { useExport } from "@/hooks/useExport";
+import ProductForm from "./ProductForm";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -62,6 +64,7 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+  const [stateFilter, setStateFilter] = React.useState<string>("");
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({
@@ -69,7 +72,6 @@ export function DataTable<TData, TValue>({
       dateOfBirth: false,
       gender: false,
       address: false,
-      categ_id: false,
     });
 
   const table = useReactTable({
@@ -104,12 +106,15 @@ export function DataTable<TData, TValue>({
         return <RoleForm />;
       case "session":
         return <SessionForm />;
+      case "product":
+        return <ProductForm />;
       default:
         return <></>;
     }
   };
 
-  const notShown = ["product", "receipt", "deliverie"];
+  const showAddButton = ["receipt", "deliverie"];
+  const showDeleteButton = ["product", "receipt", "deliverie"];
 
   const { exportCSV, exportPDF } = useExport();
 
@@ -117,49 +122,88 @@ export function DataTable<TData, TValue>({
     <div className="w-full    overflow-hidden ">
       <div>
         <div className="flex items-center py-4 justify-between ">
-          <Input
-            placeholder={
-              form !== "user" ? "Filter by name..." : "Filter by email..."
-            }
-            value={
-              (table
-                .getColumn(form !== "user" ? "name" : "email")
-                ?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table
-                .getColumn(form !== "user" ? "name" : "email")
-                ?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
-
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder={
+                form !== "user" ? "Filter by name..." : "Filter by email..."
+              }
+              value={
+                (table
+                  .getColumn(form !== "user" ? "name" : "email")
+                  ?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table
+                  .getColumn(form !== "user" ? "name" : "email")
+                  ?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm"
+            />{" "}
+            {form == "receipt" && (
+              <Select
+                value={stateFilter}
+                onValueChange={(value) => {
+                  setStateFilter(value);
+                  if (value === "all") {
+                    table.getColumn("state")?.setFilterValue("");
+                    return;
+                  }
+                  table
+                    .getColumn("state")
+                    ?.setFilterValue(value.toLocaleLowerCase());
+                }}
+              >
+                <SelectTrigger className="w-[180px] cursor-pointer">
+                  <SelectValue placeholder="Filter by state" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem className="cursor-pointer" value="all">
+                      All
+                    </SelectItem>
+                    <SelectItem className="cursor-pointer" value="done">
+                      Done
+                    </SelectItem>
+                    <SelectItem className="cursor-pointer" value="cancel">
+                      Cancel
+                    </SelectItem>
+                    <SelectItem className="cursor-pointer" value="ready">
+                      Ready
+                    </SelectItem>
+                    <SelectItem className="cursor-pointer" value="assigned">
+                      Assigned
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            )}
+          </div>
           <div className="flex items-center gap-2 ">
-            {!notShown.includes(form ?? "") && (
-              <>
-                <div>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        className="cursor-pointer"
-                        size="sm"
-                        variant="outline"
-                      >
-                        <PlusCircle />
-                        New {form}
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>New {form}</DialogTitle>
-                        <DialogDescription>
-                          Fill in the details to add a new {form}.
-                        </DialogDescription>
-                      </DialogHeader>
-                      {renderForm(form as string)}
-                    </DialogContent>
-                  </Dialog>
-                </div>
+            <>
+              {!showAddButton.includes(form ?? "") && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      className="cursor-pointer"
+                      size="sm"
+                      variant="outline"
+                    >
+                      <PlusCircle />
+                      New {form}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>New {form}</DialogTitle>
+                      <DialogDescription>
+                        Fill in the details to add a new {form}.
+                      </DialogDescription>
+                    </DialogHeader>
+                    {renderForm(form as string)}
+                  </DialogContent>
+                </Dialog>
+              )}
+              {!showDeleteButton.includes(form ?? "") && (
                 <Button
                   className="cursor-pointer"
                   size="sm"
@@ -167,8 +211,8 @@ export function DataTable<TData, TValue>({
                 >
                   <TrashIcon />
                 </Button>
-              </>
-            )}
+              )}
+            </>
             <DataTableViewOptions table={table} />
             <Select>
               <SelectTrigger className="cursor-pointer">
@@ -214,12 +258,14 @@ export function DataTable<TData, TValue>({
                     className="h-10"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
+                      <React.Fragment key={cell.id}>
+                        <TableCell>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      </React.Fragment>
                     ))}
                   </TableRow>
                 ))

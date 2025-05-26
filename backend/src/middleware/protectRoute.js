@@ -32,7 +32,6 @@ const protectRoute = async (req, res, next) => {
       });
     }
 
-    // Fetch user details from DB
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: {

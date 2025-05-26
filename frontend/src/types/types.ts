@@ -10,7 +10,7 @@ export type User = {
   gender?: string | null;
   address?: string | null;
   profilePicture?: string | null;
-  dateOfBirth?: Date | null;
+  dateOfBirth: string | Date;
   createdAt?: Date | null;
   updatedAt?: Date | null;
   roleId?: string | null;
@@ -51,14 +51,11 @@ export type Session = {
 
 export type Product = {
   id?: string;
-  name: string;
+  name: string | null;
   standard_price?: number | null;
+  default_code: string | null;
   qty_available?: number | null;
-  virtual_available?: number | null;
-  default_code: string;
   list_price?: number | null;
-  description?: string | null;
-  categ_id?: string | null;
   barcode?: string | null;
   createdAt?: Date | null;
   updatedAt?: Date | null;
@@ -66,8 +63,24 @@ export type Product = {
 
 export type Receipt = {
   id?: string;
-  name: string;
+  name: string | null;
   sheduled_date: string | null;
   state: string | null;
   partner_id: string | null;
+};
+
+export type Delivery = {
+  id?: string;
+  name: string | null;
+  sheduled_date: string | null;
+  state: string | null;
+  partner_id: string | null;
+};
+
+export type Location = {
+  id: string;
+  name: string;
+  complete_name?: string;
+  scheduled_date?: string;
+  state?: string;
 };
