@@ -4,8 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const createSession = async (sessionData: Session): Promise<Session> => {
-  console.log("from useCreateSession");
-  console.log(sessionData);
+  
   const res = await fetch("/api/sessions", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

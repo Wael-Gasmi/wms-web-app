@@ -45,7 +45,7 @@ export default function LocationSheet({ item }: LocationSheetProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {products &&
+          {Array.isArray(products) &&
             products.map((product: LocationSheetType) => (
               <TableRow key={product.id}>
                 <TableCell>{product.product_id[1]}</TableCell>

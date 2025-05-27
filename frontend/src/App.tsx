@@ -71,12 +71,9 @@ function App() {
           ),
         },
         {
-          path: "stock-movements",
+          path: "movements",
           element: (
-            <ProtectRoute
-              route="stock-movements
-"
-            >
+            <ProtectRoute route="movements">
               <StockMovements />
             </ProtectRoute>
           ),

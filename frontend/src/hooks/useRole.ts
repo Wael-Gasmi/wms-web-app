@@ -4,9 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const createRole = async (roleData: Role): Promise<Role> => {
-  console.log("from useCreateRole");
-  console.log(roleData);
-  const res = await fetch("/api/roles", {
+    const res = await fetch("/api/roles", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(roleData),

@@ -4,9 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const createMenu = async (menuData: Menu): Promise<Menu> => {
-  console.log("from useCreateMenu");
-  console.log(menuData);
-  const res = await fetch("/api/menus", {
+    const res = await fetch("/api/menus", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(menuData),

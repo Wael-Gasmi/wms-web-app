@@ -84,3 +84,13 @@ export type Location = {
   scheduled_date?: string;
   state?: string;
 };
+
+export type Movement = {
+  id: number;
+  name: string;
+  product_id: [number, string];
+  location_id: [number, string];
+  location_dest_id: [number, string];
+  date: string;
+  product_uom_qty: number;
+};

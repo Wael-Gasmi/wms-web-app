@@ -4,8 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const createUser = async (userData: User): Promise<User> => {
-  console.log("from useCreateUser");
-  console.log(userData);
+  
   const res = await fetch("/api/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

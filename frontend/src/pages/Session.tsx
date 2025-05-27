@@ -36,8 +36,7 @@ export default function ManageSession() {
   const [editingItem, setEditingItem] = useState<Session | null>(null);
   const { data: sessions, isLoading, isError } = useSessions();
   const { mutate: deleteSession } = useDeleteSession();
-  console.log(sessions);
-  const handleDelete = async (id: string) => {
+   const handleDelete = async (id: string) => {
     deleteSession(id);
   };
 

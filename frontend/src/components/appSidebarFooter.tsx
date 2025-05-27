@@ -46,7 +46,7 @@ export default function AppSidebarFooter() {
     <SidebarFooter>
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton asChild>
+          <SidebarMenuButton asChild tooltip={"Settings"}>
             <NavLink to={"/settings"}>
               <Settings />
               <span>Settings</span>
@@ -54,7 +54,7 @@ export default function AppSidebarFooter() {
           </SidebarMenuButton>
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <SidebarMenuButton asChild>
+          <SidebarMenuButton asChild tooltip={"Toggle Dark/Light Mode"}>
             <span className="cursor-pointer w-full text-left">
               <ModeToggle />
             </span>

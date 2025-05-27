@@ -8,6 +8,7 @@ dotenv.config();
 const ODOO_URL = process.env.ODOO_URL;
 const DB = process.env.ODOO_DATABASE;
 const PASSWORD = process.env.ODOO_PASSWORD;
+const USERNAME = process.env.ODOO_USERNAME;
 
 const uid = await odooLogin();
 if (!uid) throw new Error("Failed to authenticate with Odoo");
@@ -104,36 +105,105 @@ export const getReceiptById = async (req, res) => {
 };
 
 export const downloadReceiptPdf = async (req, res) => {
-  const { id } = req.params;
-
   try {
-    const pdfResponse = await axios.post(
-      `${process.env.ODOO_URL}/report/pdf/stock.report_picking/${id}`,
-      {},
+    const { id } = req.params;
+    const receiptId = parseInt(id, 10);
+    if (isNaN(receiptId))
+      return res.status(400).json({ error: "Invalid receipt ID" });
+
+    const uid = await odooLogin();
+    if (!uid) return res.status(500).json({ error: "Failed to login to Odoo" });
+
+    // First authenticate via JSON-RPC to get session cookie
+    const authResponse = await axios.post(
+      `${ODOO_URL}/web/session/authenticate`,
       {
-        auth: {
-          username: process.env.ODOO_USERNAME,
-          password: process.env.ODOO_PASSWORD,
+        jsonrpc: "2.0",
+        method: "call",
+        params: {
+          db: DB,
+          login: USERNAME,
+          password: PASSWORD,
         },
-        responseType: "arraybuffer",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/pdf",
-        },
-      }
+      },
+      { withCredentials: true }
     );
 
-    fs.writeFileSync(`./receipt_${id}.pdf`, Buffer.from(pdfResponse.data));
+    // Extract session cookie for the PDF download
+    const cookies = authResponse.headers["set-cookie"];
+    if (!cookies) throw new Error("Authentication cookies not received");
+    const sessionCookie = cookies.find((c) => c.startsWith("session_id="));
+    if (!sessionCookie) throw new Error("Session cookie not found");
+
+    // Use the official Odoo report route to get PDF
+    // Replace 'stock.report_picking' with your actual report name if needed
+    const pdfResponse = await axios.get(
+      `${ODOO_URL}/report/pdf/stock.report_picking/${receiptId}`,
+      {
+        headers: {
+          Cookie: sessionCookie.split(";")[0],
+          Accept: "application/pdf",
+        },
+        responseType: "arraybuffer",
+      }
+    );
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename=receipt_${id}.pdf`
+      `attachment; filename=receipt_${receiptId}.pdf`
     );
-    res.setHeader("Content-Transfer-Encoding", "binary");
-    res.end(Buffer.from(pdfResponse.data), "binary");
-  } catch (err) {
-    console.error("PDF Download Error:", err.message);
-    res.status(500).json({ error: "Failed to download PDF" });
+    return res.send(Buffer.from(pdfResponse.data));
+  } catch (error) {
+    console.error("Download Receipt PDF Error:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+
+export const validateReceipt = async (req, res) => {
+  const { id } = req.params;
+  const receiptId = parseInt(id, 10);
+
+  if (isNaN(receiptId)) {
+    return res.status(400).json({ error: "Invalid receipt ID" });
+  }
+
+  try {
+    const uid = await odooLogin();
+    if (!uid) {
+      return res.status(500).json({ error: "Failed to login to Odoo" });
+    }
+
+    const response = await axios.post(`${process.env.ODOO_URL}/jsonrpc`, {
+      jsonrpc: "2.0",
+      method: "call",
+      params: {
+        service: "object",
+        method: "execute_kw",
+        args: [
+          process.env.ODOO_DATABASE,
+          uid,
+          process.env.ODOO_PASSWORD,
+          "stock.picking",
+          "button_validate",
+          [[receiptId]],
+        ],
+      },
+      id: 1,
+    });
+
+    return res.status(200).json({
+      message: "Receipt validated successfully",
+      result: response.data.result,
+    });
+  } catch (error) {
+    console.error("Validation Error:", error.message);
+
+    const status = error?.response?.status || 500;
+    const message =
+      error?.response?.data?.error || error?.message || "Internal server error";
+
+    return res.status(status).json({ error: message });
   }
 };

@@ -116,7 +116,6 @@ export default function Locations() {
           columns={visibleColumns}
           data={locations ?? []}
           form="location"
-          ini
         />
       </div>
     </div>

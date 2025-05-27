@@ -12,6 +12,7 @@ import productRoutes from "./routes/product.route.js";
 import ReceiptRoutes from "./routes/receipt.route.js";
 import DeliveryRoutes from "./routes/delivery.route.js";
 import LocationRoutes from "./routes/location.route.js";
+import MovementRoutes from "./routes/movement.route.js";
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/receipts", ReceiptRoutes);
 app.use("/api/deliveries", DeliveryRoutes);
 app.use("/api/locations", LocationRoutes);
+app.use("/api/movements", MovementRoutes);
 
 app.listen(PORT, () => {
   console.clear();

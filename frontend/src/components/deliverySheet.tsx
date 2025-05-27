@@ -11,8 +11,7 @@ import { Button } from "./ui/button";
 import {
   Table,
   TableBody,
-  TableCell,
-  TableHead,
+   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
@@ -45,7 +44,7 @@ export default function DeliverySheet({ item }: DeliverySheetProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {/* {delivery &&
+          {/* {Array.isArray(delivery) &&
             delivery.map((product: DeliveryProduct) => (
               <TableRow key={product.id}>
                 <TableCell>{product.product_id[1]}</TableCell>

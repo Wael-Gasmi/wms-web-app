@@ -7,14 +7,26 @@ import { ColumnDef, Column } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { EyeIcon } from "lucide-react";
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
-import { useDownloadReceiptPdf, useReceipts } from "@/hooks/useReceipt";
+import {
+  useDownloadReceiptPdf,
+  useReceipts,
+  useValidateReceipt,
+} from "@/hooks/useReceipt";
 import ReceiptSheet from "@/components/receiptSheet";
 import ErrorPage from "@/components/ErrorPage";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Receipts() {
   const { data: receipts, isLoading, isError } = useReceipts();
   const { mutate: downloadPdf } = useDownloadReceiptPdf();
+  const { mutate: validateReceipt } = useValidateReceipt();
 
   if (isLoading) {
     return <LoadingPage />;
@@ -95,25 +107,49 @@ export default function Receipts() {
       },
     },
     {
-      id: "print",
+      id: "action",
       meta: {
         hidden: false,
       },
       cell: ({ row }) => {
         const item = row.original;
         return (
-          <Button
-            variant="ghost"
-            className="cursor-pointer"
-            onClick={() => downloadPdf(item.id ?? "")}
-          >
-            Print
-          </Button>
+          <Select>
+            <SelectTrigger className="w-[100px] cursor-pointer">
+              <SelectValue placeholder="Actions" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup className="flex flex-col">
+                <Button
+                  value="print"
+                  onClick={() => downloadPdf(item.id ?? "")}
+                  className="cursor-pointer"
+                  variant={"ghost"}
+                >
+                  Print
+                </Button>
+                {item.state === "assigned" && (
+                  <Button
+                    value="validate"
+                    variant={"ghost"}
+                    className="cursor-pointer"
+                    onClick={() => {
+                      if (item.id) {
+                        validateReceipt(item.id.toString());
+                      }
+                    }}
+                  >
+                    Validate Receipt
+                  </Button>
+                )}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         );
       },
     },
     {
-      id: "actions",
+      id: "show",
       meta: {
         hidden: false,
       },

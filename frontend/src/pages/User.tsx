@@ -69,7 +69,6 @@ export default function ManageUser() {
   const [editingItem, setEditingItem] = useState<User | null>(null);
   const { data: users, isLoading, isError } = useUsers();
   const { mutate: deleteUser } = useDeleteUser();
-  console.log(users);
   const handleDelete = async (id: string) => {
     deleteUser(id);
   };

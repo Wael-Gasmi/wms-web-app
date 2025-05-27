@@ -47,6 +47,7 @@ import { DataTableViewOptions } from "./dataTableViewOptions";
 import { DataTablePagination } from "./dataTablePagination";
 import { useExport } from "@/hooks/useExport";
 import ProductForm from "./ProductForm";
+import { on } from "events";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -117,6 +118,36 @@ export function DataTable<TData, TValue>({
   const showDeleteButton = ["product", "receipt", "deliverie"];
 
   const { exportCSV, exportPDF } = useExport();
+
+  const getExportableColumns = () =>
+    table
+      .getVisibleFlatColumns()
+      .filter((col) => col.id !== "actions") // exclude action column
+      .map((col) => col.id);
+
+  const getExportableData = () =>
+    table.getRowModel().rows.map((row) => {
+      const rowData: Record<string, any> = {};
+      row.getVisibleCells().forEach((cell) => {
+        if (cell.column.id !== "actions") {
+          rowData[cell.column.id] = cell.getValue();
+        }
+      });
+      return rowData;
+    });
+
+  const onCSV = () => {
+    const cols = getExportableColumns();
+    const data = getExportableData();
+    exportCSV(cols, data);
+  };
+
+  const onPDF = () => {
+    const cols = getExportableColumns();
+    const data = getExportableData();
+    exportPDF(cols, data);
+  };
+  
 
   return (
     <div className="w-full    overflow-hidden ">
@@ -219,12 +250,24 @@ export function DataTable<TData, TValue>({
                 <SelectValue placeholder="Export" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="csv" onClick={exportCSV}>
-                  Download CSV
-                </SelectItem>
-                <SelectItem value="pdf" onClick={exportPDF}>
-                  Download PDF
-                </SelectItem>
+                <SelectGroup className="flex flex-col">
+                  <Button
+                    value="csv"
+                    onClick={onCSV}
+                    className="cursor-pointer"
+                    variant={"ghost"}
+                  >
+                    Download CSV
+                  </Button>
+                  <Button
+                    value="pdf"
+                    onClick={onPDF}
+                    className="cursor-pointer"
+                    variant={"ghost"}
+                  >
+                    Download PDF
+                  </Button>
+                </SelectGroup>{" "}
               </SelectContent>
             </Select>
           </div>

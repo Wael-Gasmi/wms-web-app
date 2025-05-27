@@ -1,3 +1,4 @@
+import { queryClient } from "@/query/queryClient";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const useReceipts = () =>
@@ -38,8 +39,7 @@ export const useDownloadReceiptPdf = () => {
       }
 
       const blob = await response.blob();
-      console.log("Blob type:", blob.type); // Doit être "application/pdf"
-
+ 
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -49,6 +49,26 @@ export const useDownloadReceiptPdf = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+    },
+  });
+};
+
+export const useValidateReceipt = () => {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/receipts/${id}/validate`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Failed to validate receipt: ${error}`);
+      }
+
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["receipts"] });
     },
   });
 };

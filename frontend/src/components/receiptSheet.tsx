@@ -29,7 +29,7 @@ type ReceiptProduct = {
 };
 
 export default function ReceiptSheet({ item }: ReceiptSheetProps) {
-  const { data: receipt } = useReceiptById(item.id ?? "");
+  const { data: products } = useReceiptById(item.id ?? "");
 
   return (
     <SheetContent>
@@ -45,13 +45,18 @@ export default function ReceiptSheet({ item }: ReceiptSheetProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {receipt &&
-            receipt.map((product: ReceiptProduct) => (
+          {Array.isArray(products) && products.length > 0 ? (
+            products.map((product: ReceiptProduct) => (
               <TableRow key={product.id}>
                 <TableCell>{product.product_id[1]}</TableCell>
                 <TableCell>{product.product_uom_qty}</TableCell>
               </TableRow>
-            ))}
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={2}>No products found.</TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
       <SheetFooter>

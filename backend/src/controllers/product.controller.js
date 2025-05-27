@@ -75,7 +75,6 @@ export const getProducts = async (req, res) => {
               "standard_price",
               "qty_available",
               "virtual_available",
-              "categ_id",
               "barcode",
               "location_id",
             ],
