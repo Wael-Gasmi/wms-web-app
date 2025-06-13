@@ -34,11 +34,17 @@ const protectRoute = async (req, res, next) => {
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
+      include: {
+        role: true,
+        menu: {
+          include: {
+            sessions: {
+              include: {
+                subSessions: true,
+              },
+            },
+          },
+        },
       },
     });
 

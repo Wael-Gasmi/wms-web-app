@@ -1,4 +1,4 @@
- import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label"; // Changed from radix to your own component
 import { useAuthStore } from "@/store/authStore";
@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { ModeToggle } from "@/components/mode-toggle";
- 
+
 type LoginFormFields = {
   email: string;
   password: string;
@@ -31,6 +31,7 @@ export default function Login() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
 

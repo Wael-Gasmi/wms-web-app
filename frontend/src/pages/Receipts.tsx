@@ -22,11 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuthStore } from "@/store/authStore";
 
 export default function Receipts() {
   const { data: receipts, isLoading, isError } = useReceipts();
   const { mutate: downloadPdf } = useDownloadReceiptPdf();
   const { mutate: validateReceipt } = useValidateReceipt();
+  const { data } = useAuthStore();
 
   if (isLoading) {
     return <LoadingPage />;
@@ -128,20 +130,21 @@ export default function Receipts() {
                 >
                   Print
                 </Button>
-                {item.state === "assigned" && (
-                  <Button
-                    value="validate"
-                    variant={"ghost"}
-                    className="cursor-pointer"
-                    onClick={() => {
-                      if (item.id) {
-                        validateReceipt(item.id.toString());
-                      }
-                    }}
-                  >
-                    Validate Receipt
-                  </Button>
-                )}
+                {item.state === "assigned" &&
+                  data?.role?.name.toLowerCase() == " admin" && (
+                    <Button
+                      value="validate"
+                      variant={"ghost"}
+                      className="cursor-pointer"
+                      onClick={() => {
+                        if (item.id) {
+                          validateReceipt(item.id.toString());
+                        }
+                      }}
+                    >
+                      Validate Receipt
+                    </Button>
+                  )}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -173,7 +176,9 @@ export default function Receipts() {
 
   return (
     <div className="container mx-auto py-10 px-5 overflow-hidden">
-      <h1 className="text-2xl font-bold tracking-tighter">Receipts</h1>
+      <h1 className="text-2xl font-bold tracking-tighter">
+        Reception of goods
+      </h1>
       <Separator className="my-5" />
       <div className="overflow-x-auto">
         <DataTable

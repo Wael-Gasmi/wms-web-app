@@ -47,7 +47,6 @@ import { DataTableViewOptions } from "./dataTableViewOptions";
 import { DataTablePagination } from "./dataTablePagination";
 import { useExport } from "@/hooks/useExport";
 import ProductForm from "./ProductForm";
-import { on } from "events";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -114,15 +113,16 @@ export function DataTable<TData, TValue>({
     }
   };
 
-  const showAddButton = ["receipt", "deliverie"];
+  const showAddButton = ["receipt", "deliverie", "product", "location"];
   const showDeleteButton = ["product", "receipt", "deliverie"];
+  const showStateFilter = ["receipt", "deliverie"];
 
   const { exportCSV, exportPDF } = useExport();
 
   const getExportableColumns = () =>
     table
       .getVisibleFlatColumns()
-      .filter((col) => col.id !== "actions") // exclude action column
+      .filter((col) => col.id !== "actions")
       .map((col) => col.id);
 
   const getExportableData = () =>
@@ -147,7 +147,6 @@ export function DataTable<TData, TValue>({
     const data = getExportableData();
     exportPDF(cols, data);
   };
-  
 
   return (
     <div className="w-full    overflow-hidden ">
@@ -170,7 +169,7 @@ export function DataTable<TData, TValue>({
               }
               className="max-w-sm"
             />{" "}
-            {form == "receipt" && (
+            {showStateFilter.includes(form ?? "") && (
               <Select
                 value={stateFilter}
                 onValueChange={(value) => {

@@ -19,12 +19,38 @@ import {
 } from "./ui/collapsible";
 import AppSidebarFooter from "./appSidebarFooter";
 import RenderIcon from "./renderIcon";
+import { useEffect, useState } from "react";
 
 export function AppSidebar() {
   const { data } = useAuthStore();
   const menu = data?.menu?.sessions;
+
+  const [side, setSide] = useState<"left" | "right">("left");
+  const [collapsible, setCollapsible] = useState<"offcanvas" | "icon" | "none">(
+    "icon"
+  );
+  const [variant, setVariant] = useState<"sidebar" | "floating" | "inset">(
+    "sidebar"
+  );
+
+  useEffect(() => {
+    const storedSide = localStorage.getItem("sidebarSide") as "left" | "right";
+    const storedCollapsible = localStorage.getItem("sidebarCollapsible") as
+      | "offcanvas"
+      | "icon"
+      | "none";
+    const storedVariant = localStorage.getItem("sidebarVariant") as
+      | "sidebar"
+      | "floating"
+      | "inset";
+
+    if (storedSide) setSide(storedSide);
+    if (storedCollapsible) setCollapsible(storedCollapsible);
+    if (storedVariant) setVariant(storedVariant);
+  }, []);
+
   return (
-    <Sidebar collapsible="icon" side="left">
+    <Sidebar side={side} collapsible={collapsible} variant={variant}>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>{data?.menu?.name}</SidebarGroupLabel>

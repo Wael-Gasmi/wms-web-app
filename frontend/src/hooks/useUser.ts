@@ -4,7 +4,6 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const createUser = async (userData: User): Promise<User> => {
-  
   const res = await fetch("/api/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -69,6 +68,37 @@ export const useEditUser = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       toast.success("User updated successfully", {
+        duration: 3000,
+        richColors: true,
+      });
+    },
+  });
+};
+
+const resetPassword = async ({
+  id,
+  password,
+}: {
+  id: string;
+  password: string;
+}): Promise<User> => {
+  const res = await fetch(`/api/users/${id}/reset-password`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userData: { password } }),
+  });
+
+  if (!res.ok) throw new Error("Failed to reset user password");
+
+  return res.json();
+};
+
+export const useResetPassword = () => {
+  return useMutation<User, Error, { id: string; password: string }>({
+    mutationFn: resetPassword,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success("User Reset Password successfully", {
         duration: 3000,
         richColors: true,
       });

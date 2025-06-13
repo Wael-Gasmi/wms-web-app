@@ -1,7 +1,7 @@
 {
   "name": "dev",
   "version": "1.0.0",
-  "description": "",
+  "description": "��#\u0000 \u0000w\u0000m\u0000s\u0000-\u0000w\u0000e\u0000b\u0000-\u0000a\u0000p\u0000p\u0000\r\u0000 \u0000#\u0000 \u0000w\u0000m\u0000s\u0000-\u0000w\u0000e\u0000b\u0000-\u0000a\u0000p\u0000p\u0000\r\u0000 \u0000#\u0000 \u0000w\u0000m\u0000s\u0000-\u0000w\u0000e\u0000b\u0000-\u0000a\u0000p\u0000p\u0000\r\u0000 \u0000",
   "main": "backend/src/server.js",
   "scripts": {
     "dev": "nodemon backend/src/server.js"
@@ -22,10 +22,19 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "framer-motion": "^12.16.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "websocket": "^1.0.35",
     "ws": "^8.18.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wael-Gasmi/wms-web-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Wael-Gasmi/wms-web-app/issues"
+  },
+  "homepage": "https://github.com/Wael-Gasmi/wms-web-app#readme"
 }

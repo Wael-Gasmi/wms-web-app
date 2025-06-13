@@ -13,7 +13,7 @@ const generateToken = (userId, res) => {
     sameSite: "strict",
   });
 
-  return token;
+   return token;
 };
 
 export default generateToken;

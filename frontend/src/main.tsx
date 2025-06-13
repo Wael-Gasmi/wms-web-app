@@ -8,7 +8,7 @@ import { queryClient } from "./query/queryClient";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider defaultTheme="light" storageKey="app-theme">
+    <ThemeProvider defaultTheme="light" storageKey="theme">
       <QueryClientProvider client={queryClient}>
         <AppSidebarProvider />
       </QueryClientProvider>

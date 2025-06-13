@@ -76,12 +76,7 @@ export const login = async (req, res) => {
       });
     }
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        isActive: true,
-      },
-    });
+    console.log("User found:", user);
 
     const isPasswordValid = await bcryptjs.compare(password, user.password);
 
@@ -92,6 +87,13 @@ export const login = async (req, res) => {
         statusCode: 401,
       });
     }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isActive: true,
+      },
+    });
 
     generateToken(user.id, res);
 

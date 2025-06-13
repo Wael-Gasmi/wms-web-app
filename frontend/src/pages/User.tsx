@@ -21,10 +21,11 @@ import { ColumnDef, Column } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { useUsers } from "@/hooks/useData";
-import { useDeleteUser } from "@/hooks/useUser";
+import { useDeleteUser, useResetPassword } from "@/hooks/useUser";
 import LoadingPage from "@/components/LoadingPage";
 import { Separator } from "@/components/ui/separator";
 import ErrorPage from "@/components/ErrorPage";
+import { Input } from "@/components/ui/input";
 
 const tableColumns = [
   {
@@ -67,8 +68,19 @@ const tableColumns = [
 
 export default function ManageUser() {
   const [editingItem, setEditingItem] = useState<User | null>(null);
+  const [showResetDialog, setShowResetDialog] = useState<User | null>(null);
   const { data: users, isLoading, isError } = useUsers();
   const { mutate: deleteUser } = useDeleteUser();
+  const { mutate: resetPassword } = useResetPassword();
+  const [password, setPassword] = useState("");
+  const onResetPassword = () => {
+    if (showResetDialog && password) {
+      resetPassword({ id: showResetDialog.id ?? "", password });
+      setShowResetDialog(null);
+      setPassword("");
+    }
+  };
+
   const handleDelete = async (id: string) => {
     deleteUser(id);
   };
@@ -143,7 +155,10 @@ export default function ManageUser() {
               >
                 Delete
               </DropdownMenuItem>
-              <DropdownMenuItem className="p-2 outline-0 cursor-pointer">
+              <DropdownMenuItem
+                className="p-2 outline-0 cursor-pointer"
+                onSelect={() => setShowResetDialog(item)}
+              >
                 Reset Password
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -168,6 +183,33 @@ export default function ManageUser() {
               </DialogDescription>
             </DialogHeader>
             <UserForm form={editingItem} />
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {showResetDialog && (
+        <Dialog
+          open={!!showResetDialog}
+          onOpenChange={() => {
+            setShowResetDialog(null);
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Reset Password</DialogTitle>
+              <DialogDescription>Fill in the new password.</DialogDescription>
+            </DialogHeader>
+            <Input
+              placeholder="New Password"
+              value={password}
+              type="password"
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
+            />
+            <Button variant={"default"} size={"sm"} onClick={onResetPassword}>
+              Reset Password
+            </Button>
           </DialogContent>
         </Dialog>
       )}

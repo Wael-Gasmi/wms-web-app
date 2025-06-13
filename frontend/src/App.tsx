@@ -23,10 +23,22 @@ import Deliveries from "./pages/Deliveries";
 import Receipts from "./pages/Receipts";
 import Locations from "./pages/Locations";
 import StockMovements from "./pages/StockMovements";
+import { useEffect, useState } from "react";
 
 function App() {
-  const { data } = useAuthStore();
+  const fetchUser = useAuthStore((state) => state.fetchUser);
+  const data = useAuthStore((state) => state.data);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUser().finally(() => setLoading(false));
+  }, [fetchUser]);
+
   const isAuthenticated = !!data;
+
+  if (loading) {
+    return <div className="p-4 text-center">Loading...</div>;
+  }
 
   const router = createBrowserRouter([
     {

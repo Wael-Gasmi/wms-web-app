@@ -1,0 +1,8 @@
+{
+  "menu": {
+    "sessions": [
+      { "name": "Management", "path": "/management" },
+      { "name": "Manage Users", "path": "/management/users" }
+    ]
+  }
+}

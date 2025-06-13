@@ -1,18 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import { useMenus, useRoles } from "@/hooks/useData";
+import { useCreateUser, useEditUser } from "@/hooks/useUser";
 
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
-import { Calendar } from "./ui/calendar";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import {
   Select,
   SelectContent,
@@ -20,37 +15,51 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { useCreateUser, useEditUser } from "@/hooks/useUser";
+
+type Role = {
+  id: string;
+  name: string;
+};
+
+type Menu = {
+  id: string;
+  name: string;
+};
 
 type FormFields = {
   id?: string;
   firstName: string;
   lastName: string;
   email: string;
-  password: string;
+  password?: string;
   roleId?: string;
   menuId?: string;
   phoneNumber?: string;
   gender?: string;
   address?: string;
   profilePicture?: string;
-  dateOfBirth?: Date;
+  dateOfBirth?: string; // using string in "YYYY-MM-DD" format for input type="date"
   isActive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 };
 
 type UserFormProps = {
-  form?: any;
+  form?: Partial<FormFields> & {
+    role?: Role;
+    menu?: Menu;
+  };
 };
 
 export default function UserForm({ form }: UserFormProps) {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     setValue,
+    clearErrors,
     watch,
+    setError,
   } = useForm<FormFields>({
     defaultValues: form
       ? {
@@ -58,28 +67,38 @@ export default function UserForm({ form }: UserFormProps) {
           firstName: form?.firstName || "",
           lastName: form?.lastName || "",
           email: form?.email || "",
-          password: form?.password || "",
-          roleId: form?.role?.id || "",
-          menuId: form?.menu?.id || "",
+          password: "",
+          roleId: form?.role?.id || form?.roleId || "",
+          menuId: form?.menu?.id || form?.menuId || "",
           phoneNumber: form?.phoneNumber || "",
           gender: form?.gender || "",
           address: form?.address || "",
           profilePicture: form?.profilePicture || "",
-          dateOfBirth: form?.dateOfBirth || "",
+          dateOfBirth: form?.dateOfBirth ? form.dateOfBirth.slice(0, 10) : "",
         }
       : undefined,
   });
-  const gender = watch("gender");
 
-  const [date, setDate] = useState<Date>(
-    form?.dateOfBirth ? new Date(form.dateOfBirth) : new Date()
-  );
+  const gender = watch("gender");
+  const roleId = watch("roleId") || "";
+  const menuId = watch("menuId") || "";
+
   const menus = useMenus();
   const roles = useRoles();
   const { mutate: createUser } = useCreateUser();
   const { mutate: editUser } = useEditUser();
 
   const onSubmit: SubmitHandler<FormFields> = (data) => {
+    if (!data.roleId) {
+      setError("roleId", { type: "manual", message: "Role is required" });
+      return;
+    }
+
+    if (!data.menuId) {
+      setError("menuId", { type: "manual", message: "Menu is required" });
+      return;
+    }
+
     if (form) {
       editUser(data);
     } else {
@@ -91,6 +110,7 @@ export default function UserForm({ form }: UserFormProps) {
     <form
       className="flex flex-col gap-4 pt-3"
       onSubmit={handleSubmit(onSubmit)}
+      noValidate
     >
       <div className="flex justify-between gap-4">
         <div className="grid w-full max-w-sm gap-1.5 m-auto">
@@ -99,10 +119,10 @@ export default function UserForm({ form }: UserFormProps) {
             type="text"
             id="firstName"
             placeholder="First Name"
-            {...register("firstName", { required: true })}
+            {...register("firstName", { required: "First name is required" })}
           />
           {errors.firstName && (
-            <p className="text-red-500">{String(errors.firstName.message)}</p>
+            <p className="text-red-500">{errors.firstName.message}</p>
           )}
         </div>
         <div className="grid w-full max-w-sm gap-1.5 m-auto">
@@ -111,10 +131,10 @@ export default function UserForm({ form }: UserFormProps) {
             type="text"
             id="lastName"
             placeholder="Last Name"
-            {...register("lastName", { required: true })}
+            {...register("lastName", { required: "Last name is required" })}
           />
           {errors.lastName && (
-            <p className="text-red-500">{String(errors.lastName.message)}</p>
+            <p className="text-red-500">{errors.lastName.message}</p>
           )}
         </div>
       </div>
@@ -126,25 +146,29 @@ export default function UserForm({ form }: UserFormProps) {
             type="email"
             id="email"
             placeholder="Email"
-            {...register("email", { required: true })}
+            {...register("email", {
+              required: "Email is required",
+              pattern: {
+                value: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
+                message: "Invalid email address",
+              },
+            })}
           />
           {errors.email && (
-            <p className="text-red-500">{String(errors.email.message)}</p>
+            <p className="text-red-500">{errors.email.message}</p>
           )}
         </div>
-        {form ? (
-          <></>
-        ) : (
+        {!form && (
           <div className="grid w-full max-w-sm gap-1.5 m-auto">
             <Label htmlFor="password">Password</Label>
             <Input
               type="password"
               id="password"
               placeholder="Password"
-              {...register("password", { required: true })}
+              {...register("password", { required: "Password is required" })}
             />
             {errors.password && (
-              <p className="text-red-500">{String(errors.password.message)}</p>
+              <p className="text-red-500">{errors.password.message}</p>
             )}
           </div>
         )}
@@ -160,7 +184,7 @@ export default function UserForm({ form }: UserFormProps) {
             {...register("phoneNumber")}
           />
           {errors.phoneNumber && (
-            <p className="text-red-500">{String(errors.phoneNumber.message)}</p>
+            <p className="text-red-500">{errors.phoneNumber.message}</p>
           )}
         </div>
         <div className="grid w-full max-w-sm gap-1.5 m-auto">
@@ -194,32 +218,12 @@ export default function UserForm({ form }: UserFormProps) {
         </div>
         <div className="grid w-full max-w-sm gap-1.5 m-auto">
           <Label htmlFor="dateOfBirth">Birth Date</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !date && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon />
-                {date ? format(date, "PPP") : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={(day) => {
-                  const selectedDate = day || new Date();
-                  setDate(selectedDate);
-                  setValue("dateOfBirth", selectedDate);
-                }}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <Input
+            id="dateOfBirth"
+            type="date"
+            {...register("dateOfBirth")}
+            max={new Date().toISOString().split("T")[0]}
+          />
         </div>
       </div>
 
@@ -227,43 +231,57 @@ export default function UserForm({ form }: UserFormProps) {
         <div className="grid w-full max-w-sm gap-1.5 m-auto">
           <Label htmlFor="role">Role</Label>
           <Select
-            onValueChange={(value: string) => setValue("roleId", value)}
-            defaultValue={form?.roleId || ""}
+            value={roleId}
+            onValueChange={(value: string) => {
+              setValue("roleId", value);
+              clearErrors("roleId");
+            }}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={form?.role?.name || "Role"} />
+              <SelectValue placeholder="Select Role" />
             </SelectTrigger>
             <SelectContent>
-              {roles.data?.map((role: any) => (
+              {roles.data?.map((role: Role) => (
                 <SelectItem key={role.id} value={role.id}>
                   {role.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {errors.roleId && (
+            <p className="text-red-500 text-sm">{errors.roleId.message}</p>
+          )}
         </div>
         <div className="grid w-full max-w-sm gap-1.5 m-auto">
           <Label htmlFor="menu">Menu</Label>
           <Select
-            onValueChange={(value: string) => setValue("menuId", value)}
-            defaultValue={form?.menuId || ""}
+            value={menuId}
+            onValueChange={(value: string) => {
+              setValue("menuId", value);
+              clearErrors("menuId");
+            }}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={form?.menu?.name || "Menu"} />
+              <SelectValue placeholder="Select Menu" />
             </SelectTrigger>
             <SelectContent>
-              {menus.data?.map((menu: any) => (
+              {menus.data?.map((menu: Menu) => (
                 <SelectItem key={menu.id} value={menu.id}>
                   {menu.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {errors.menuId && (
+            <p className="text-red-500 text-sm">{errors.menuId.message}</p>
+          )}
         </div>
       </div>
 
       <div className="grid w-full m-auto">
-        <Input type="submit" className="cursor-pointer mt-3" />
+        <Button type="submit" className="mt-3" disabled={isSubmitting}>
+          {form ? "Update User" : "Create User"}
+        </Button>
       </div>
     </form>
   );
